@@ -17,18 +17,19 @@ Use the Node server URL, not a static-file server such as `python -m http.server
 
 ## Render deployment
 
-The root `render.yaml` defines a Node web service and a persistent PostgreSQL database. No local Docker installation is needed for a Render deployment.
+The root `render.yaml` defines a free Node web service. No local Docker installation is needed. To keep the database free without using Render's expiring 30-day free PostgreSQL, use Neon Free for PostgreSQL.
 
-1. Push this project to a GitHub repository. Keep `.env` out of Git; it is ignored by `.gitignore`.
-2. In Render, create a new Blueprint and connect that repository. Render reads `render.yaml` and provisions the web service and database.
-3. When prompted, enter the owner email and a unique password of at least 12 characters and no more than 72 UTF-8 bytes. Enter these only in Render's private environment-variable form, never in GitHub or chat.
-4. Wait for the deployment health check to pass, then open the service URL. On the first startup, the app creates the single owner account from those private settings. The owner's first login initializes the starter catalog.
+1. Create a free PostgreSQL project in [Neon](https://neon.tech/). Copy its pooled connection string and keep it private.
+2. In [Render](https://dashboard.render.com/), create a new Blueprint and connect this GitHub repository. Render reads `render.yaml` and proposes a free web service.
+3. In the private environment-variable prompts, enter the Neon connection string for `DATABASE_URL`, your owner email, and a unique owner password of at least 12 characters and no more than 72 UTF-8 bytes. Never enter secrets into GitHub or chat.
+4. Confirm that the Blueprint lists **only the Free web service** and no paid resources, then deploy. Wait for the health check to pass and open the service URL.
+5. On first startup, the app creates the owner account. The owner's first login initializes the starter catalog.
 
-The Blueprint generates the session secret and connects the database automatically. Subsequent service restarts do not change or recreate the owner account. The database plan is paid so data persists; check Render's current pricing before provisioning. Do not expose the database publicly or put passwords/database URLs in source control.
+The Blueprint generates the session secret. Subsequent service restarts do not recreate the owner account. Neon Free is $0 with usage limits and scale-to-zero; Render Free sleeps after 15 minutes without traffic and can take about a minute to wake. Free-tier services are intended for prototypes and hobby projects, not a production canteen that requires continuous availability, guaranteed backups, or service-level commitments. Check both providers' current free-tier terms and usage before deploying. Do not expose the database publicly or put passwords/database URLs in source control.
 
 ## Production boundaries
 
-- Login sessions are server-side and use HTTP-only, same-site cookies. Passwords are hashed; use passwords with at least 12 characters and no more than 72 UTF-8 bytes. Account roles are assigned by the server. Render's internal PostgreSQL connection uses TLS with its self-signed internal certificate.
+- Login sessions are server-side and use HTTP-only, same-site cookies. Passwords are hashed; use passwords with at least 12 characters and no more than 72 UTF-8 bytes. Account roles are assigned by the server. Production database connections use TLS.
 - The bootstrap command refuses to create a second admin. Student registration always creates a student account.
 - Online UPI/card processing is intentionally disabled. Orders are placed for cash payment at pickup; do not collect card details in this app.
 - Menu photos must use HTTPS image URLs. Local file uploads are not shared or persisted by the backend.
