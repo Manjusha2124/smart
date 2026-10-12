@@ -25,7 +25,7 @@ const isProduction = process.env.NODE_ENV === 'production';
 const app = express();
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: isProduction ? { rejectUnauthorized: false } : undefined,
+  ssl: isProduction ? { rejectUnauthorized: true } : undefined,
   max: 10,
   idleTimeoutMillis: 30_000
 });
